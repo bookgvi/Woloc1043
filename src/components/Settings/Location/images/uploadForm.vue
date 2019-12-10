@@ -12,7 +12,7 @@
         .col
           q-btn.bg-primary.text-white(type="submit" label="Отправить" :loading="submitting")
             template(v-slot:loading)
-              q-spinner-gears
+              q-spinner-facebook
 </template>
 
 <script>

@@ -18,7 +18,7 @@
             )
               q-btn.absolute-top-right(icon="close" class="block" dense flat color="white" title="close")
               template(v-slot:error)
-                .absolute-full.flex.flex-center.bg-grey-6.text-white Не удалось загрузить изображение (sort: {{ singleStudioVM.images[index - 1].sort }})
+                .absolute-full.flex.flex-center.bg-grey-6.text-white Не удалось загрузить изображение (sort: {{ singleStudioVM.images[index - 1].sort }}, id: {{ singleStudioVM.images[index - 1].id }})
       .row.no-wrap.q-pb-lg(v-if="isShow")
         draggable(v-model="singleStudioVM.images" @change="changeSortField(singleStudioVM.images)")
           .inline-block(v-for="(item, index) in singleStudioVM.images" :key="index" title="Drag and drop")
@@ -30,7 +30,7 @@
             )
               q-btn.absolute-top-right(icon="close" class="block" dense flat color="red" title="close")
               template(v-slot:error)
-                .absolute-full.flex.flex-center.bg-grey-6.text-white Не удалось загрузить изображение (sort: {{ item.sort }})
+                .absolute-full.flex.flex-center.bg-grey-6.text-white Не удалось загрузить изображение (sort: {{ item.sort }}, id: {{ item.id }})
       .row
         .col
           .cursor-pointer(v-if="!isShow && singleStudioVM.images.length > 4" @click="isShow = !isShow" style="font-size: 18px")
