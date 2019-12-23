@@ -84,11 +84,16 @@ export default {
         return current.sort > prev.sort ? 1 : -1
       })
     },
-    changeSortField (imgArray) {
+    async changeSortField (imgArray) {
       imgArray.forEach((item, index) => {
         item.sort = index
       })
-      this.showNotif('Не забудьте сохранить изменения', 'primary')
+      const result = await this.$app.studios.updateOne({ id: this.singleStudioVM.id, data: this.singleStudioVM })
+      if (result.hasOwnProperty('data')) {
+        this.showNotif('Изменения сохранены', 'green')
+      } else {
+        this.showNotif('Ошибка сохранения изменений', 'red')
+      }
     },
     closeUploadDialog () {
       this.isModalForUploadFile = false
