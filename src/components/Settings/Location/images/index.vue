@@ -96,7 +96,7 @@ export default {
     },
     async deleteImg (img, index) {
       img.isDeleted = true
-      const result = await this.$app.studios.updateStudio(this.singleStudioVM.id, this.singleStudioVM)
+      const result = await this.$app.studios.updateOne({ id: this.singleStudioVM.id, data: this.singleStudioVM })
       if (result.hasOwnProperty('data')) {
         this.showNotif('Изображение удалено', 'orange')
       } else {
