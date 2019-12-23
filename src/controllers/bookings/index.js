@@ -119,53 +119,12 @@ export default {
       this.loading.list = false
     },
 
-    async addNew (payload) {
-      this.loading.one = true
-      this.idOfJustAdded = 0
-      const res = await api.bookings.addNew(payload)
-      if (res) {
-        this.idOfJustAdded = res.id
-      }
-      this.loading.one = false
-    },
-
     async addNewTechnical (payload) {
       this.loading.one = true
       this.idOfJustAdded = 0
       const res = await api.bookings.addNewTechnical(payload)
       if (res) {
         this.idOfJustAdded = res.id
-      }
-      this.loading.one = false
-    },
-
-    async updateOne (id, data) {
-      this.loading.one = true
-      const res = await api.bookings.updateOne({ id, data })
-      // console.log('bookings :: updateOne', res)
-      if (res) {
-        this.idOfJustAdded = res.id
-      }
-      this.loading.one = false
-    },
-
-    async deleteOne (id) {
-      this.loading.one = true
-      const res = await api.bookings.deleteOne({ id: id })
-      if (res) {
-        // console.log(res)
-      }
-      this.loading.one = false
-    },
-
-    async getOne (id) {
-      this.loading.one = true
-
-      const { data } = await api.bookings.getOne({ id: id })
-
-      if (data) {
-        this.loading.one = false
-        return data
       }
       this.loading.one = false
     },

@@ -1,24 +1,24 @@
 {
-  "id": 0,
+  "id": "",
   "color": null,
-  "status": 1,
+  "status": "",
   "studio": {
-    "id": 0
+    "id": ""
   },
-  "name": "Новый зал",
-  "isRoom": 0,
-  "minHours": "-",
-  "needPrepayment": 0,
+  "name": "",
+  "isRoom": 1,
+  "minHours": "",
+  "needPrepayment": 1,
   "description": " ",
-  "height": "-",
-  "yardage": "-",
+  "height": "",
+  "yardage": "",
   "payment": {
     "photo": {
-      "maxSeats": 0,
-      "seats": 0,
-      "seatPrice": 0,
-      "discountToday": 0,
-      "discountTomorrow": 0,
+      "maxSeats": "",
+      "seats": "",
+      "seatPrice": "",
+      "discountToday": "",
+      "discountTomorrow": "",
       "prices": [
         {
           "time": "0:00",
@@ -845,11 +845,11 @@
       ]
     },
     "video": {
-      "maxSeats": 0,
-      "seats": 0,
-      "seatPrice": 0,
-      "discountToday": 0,
-      "discountTomorrow": 0,
+      "maxSeats": "",
+      "seats": "",
+      "seatPrice": "",
+      "discountToday": "",
+      "discountTomorrow": "",
       "prices": [
         {
           "time": "0:00",
@@ -1676,11 +1676,11 @@
       ]
     },
     "event": {
-      "maxSeats": 0,
-      "seats": 0,
-      "seatPrice": 0,
-      "discountToday": 0,
-      "discountTomorrow": 0,
+      "maxSeats": "",
+      "seats": "",
+      "seatPrice": "",
+      "discountToday": "",
+      "discountTomorrow": "",
       "prices": [
         {
           "time": "0:00",

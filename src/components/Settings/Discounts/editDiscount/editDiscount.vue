@@ -122,7 +122,6 @@
 import { date } from 'quasar'
 import { DateRange } from 'vue-date-range'
 import VueCtkDateTimePicker from 'vue-ctk-date-time-picker'
-import studios from '../../../../api/studios'
 export default {
   props: {
     getTitle: Function,
@@ -195,13 +194,13 @@ export default {
       this.isActive = Boolean(this.row.isActive)
       this.singleStudioName = this.row.studio.title
     } else {
-      const { items } = await studios.getAll().then(resp => resp.data)
+      const { items } = await this.$app.studios.getAll()
       let { studio } = this.$app.filters.getValues('settings')
       const [{ name }] = items.filter(item => item.id === studio)
       this.singleStudioName = name
     }
     if (this.row.room) {
-      this.roomName = this.row.room.title
+      this.roomName = this.row.room.title || this.row.room.name
     } else {
       this.getRooms(this.singleStudioName)
     }
@@ -218,12 +217,12 @@ export default {
       this.$emit('hasModal')
     },
     async getRooms (studioName) {
-      const { items } = await studios.getAll().then(resp => resp.data)
+      const { items } = await await this.$app.studios.getAll()
       const studio = items.filter(item => item.name === studioName).pop()
       this.roomName = ''
       this.roomsOptions = []
       if (studio.rooms[0]) {
-        this.roomName = studio.rooms[0].name
+        this.roomName = studio.rooms[0].name || studio.rooms[0].title
         this.roomId = studio.rooms[0].id
         this.roomsOptions = studio.rooms
       }

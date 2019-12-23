@@ -6,7 +6,7 @@
           studio-filter(v-bind="props")
         template(#append)
           q-btn.q-btn--no-uppercase(label="Добавить зал" dense color="primary" @click="createNew")
-    .content--content2(:key="filterChanged")
+    .content--content2(:key="filterChanged.studio")
       .row.q-py-md.q-pr-sm(:key="reloadData")
         .col-3.bg-white
           room-list(
@@ -67,12 +67,12 @@ import additionalServices from './additionalServices'
 import services from './services'
 import StudioFilter from '../../Filters/StudioFilter'
 import FiltersList from '../../Filters/FiltersList'
-import room from '../../../api/room'
+import { room } from '../../../api/room'
 import RoomList from './roomList'
-import studios from '../../../api/studios'
 export default {
   data () {
     return {
+      createRoomAfterLocation: false,
       defaultStudio: {},
       defaultRooms: {},
       roomDataDefault: {},
@@ -102,14 +102,27 @@ export default {
     additionalServices,
     services
   },
-  computed: {
-    filterChanged () {
-      this.getStudioAndRoom()
-      return this.$app.filters.getValues('settings').studio
+  watch: {
+    async filterChanged () {
+      await this.getStudioAndRoom()
+      if (this.createRoomAfterLocation) {
+        this.createNew()
+      }
     }
   },
-  async created () {
-    this.getStudioAndRoom()
+  computed: {
+    filterChanged () {
+      return this.$app.filters.getValues('settings')
+    }
+  },
+  beforeRouteEnter (to, from, next) {
+    if (from.path === '/settings/location' && to.query.createRoom) {
+      next(vm => {
+        vm.createRoomAfterLocation = true
+      })
+    } else {
+      next()
+    }
   },
   beforeRouteLeave (to, from, next) {
     this.isSomethingChanged =
@@ -122,6 +135,13 @@ export default {
     } else {
       next()
     }
+  },
+  mounted () {
+    window.addEventListener('keyup', e => {
+      if (e.key === 'Escape' && this.createRoomAfterLocation) {
+        this.getStudioAndRoom()
+      }
+    })
   },
   methods: {
     async getStudioAndRoom () {
@@ -137,8 +157,8 @@ export default {
         this.currentRoomData = await this.getRoomData(this.selectedRoom.id)
         this.saveDefaultData()
       }
-      this.reloadData++
       this.isPost = false
+      this.reloadData++
     },
     async setCurrentRoom (room) {
       this.selectedRoom = room
@@ -151,12 +171,12 @@ export default {
     },
     async getRoomData (id) {
       if (this.selectedRoom.hasOwnProperty('id') && this.selectedRoom.id) {
-        const currentRoomData = await room.getOne(id)
+        const currentRoomData = await this.$app.room.getOne(id)
         return currentRoomData
       }
     },
     async getAllRooms (id) { // Получаем массив всех залов локации id
-      const { items } = await studios.getAll().then(resp => resp.data)
+      const { items } = await this.$app.studios.getAll()
       const [{ rooms }] = items.filter(item => item.id === id)
       return rooms
     },
@@ -168,40 +188,30 @@ export default {
       this.currentRoomData = data
       this.currentRoomData.studio.id = filter.studio
       this.isPost = true
+      this.createRoomAfterLocation = true
       // this.reloadData++
     },
     async saveChanges () {
-      if (!this.currentRoomData.name ||
-        !this.currentRoomData.minHours ||
-        !this.currentRoomData.height ||
-        !this.currentRoomData.yardage
-      ) {
-        this.isRequired = true
-        console.warn('Заполните обязательные поля')
-        this.showNotif('Заполните обязательные поля')
-        return
-      }
-      this.isRequired = false
       if (this.isPost) {
-        const result = await room.createRoom(this.currentRoomData)
-        if (result.hasOwnProperty('errors')) {
+        const result = await this.$app.room.addNew(this.currentRoomData)
+        if (result && result.hasOwnProperty('errors') && result.errors.length) {
           this.showNotif('Ошибка создания зала. Проверьте обязательные поля')
           result.errors.forEach(item => {
-            this.currentRoomData[item.source] = ''
+            this.highLightRequired(item.source)
           })
           return
         } else if (result.hasOwnProperty('data')) {
           this.showNotif('Зал создан!', 'green')
+          this.rooms = await this.getAllRooms(this.currentRoomData.studio.id) // Обновляем список залов для блока слева
+          const newRoom = this.rooms.filter(item => item.name === this.currentRoomData.name)[0]
+          this.setCurrentRoom(newRoom) // Выбираем новосозданный зал в списке
         }
-        this.rooms = await this.getAllRooms(this.currentRoomData.studio.id) // Обновляем список залов для блока слева
-        const newRoom = this.rooms.filter(item => item.name === this.currentRoomData.name)[0]
-        this.setCurrentRoom(newRoom) // Выбираем новосозданный зал в списке
       } else {
-        const result = await room.updateRoom(this.currentRoomData.id, this.currentRoomData)
-        if (result.hasOwnProperty('errors')) {
+        const result = await this.$app.room.updateOne({ id: this.currentRoomData.id, data: this.currentRoomData })
+        if (result && result.hasOwnProperty('errors') && result.errors.length) {
           this.showNotif('Ошибка создания зала. Проверьте обязательные поля')
           result.errors.forEach(item => {
-            this.currentRoomData[item.source] = ''
+            this.highLightRequired(item.source)
           })
           return
         } else if (result.hasOwnProperty('data')) {
@@ -241,6 +251,13 @@ export default {
         }
       }
       return false
+    },
+    highLightRequired (fieldClass) {
+      const field = document.querySelector(`.${fieldClass} input`)
+      this.$nextTick(_ => {
+        field.focus()
+        field.blur()
+      })
     },
     showNotif (msg, clr = 'purple') {
       this.$q.notify({

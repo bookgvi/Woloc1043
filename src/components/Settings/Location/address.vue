@@ -30,17 +30,17 @@
         :settings="options.yaMap"
         map-type="map"
         scroll-zoom=false
-        zoom="16"
+        zoom=17
         :coords="[singleStudio.lat, singleStudio.lon]"
         :controls="yControls"
         style="width: 100%; height: 480px"
         @click="setAddress"
       )
-        ymap-marker(
+        ymapMarker(
           v-if="isMarker"
-          marker-id="1"
+          marker-id="singleStudio.id"
           :coords="markerCoords"
-          :balloon="{ header: singleStudio.name }"
+          :hint-content="singleStudio.name"
         )
     .row.q-pb-lg
       .col
@@ -81,6 +81,7 @@ export default {
   data () {
     return {
       isMarker: false,
+      defaultAddress: 'г Москва, ул Кремль',
       fullAddressArr: [],
       yControls: [],
       options: {
@@ -91,11 +92,6 @@ export default {
       },
       instWalk: 'Выйдя из метро идите вдоль торговых рядов вдоль и железной дороги. Перейдя железнодорожные пути пройдите через шлагбаум на территорию бывшего завода Станколит ...',
       instAuto: ''
-    }
-  },
-  watch: {
-    singleStudio () {
-      this.showOnMap()
     }
   },
   computed: {
@@ -123,17 +119,15 @@ export default {
     },
     async showOnMap () {
       this.isMarker = false
-      await axios.get(`https://geocode-maps.yandex.ru/1.x/`, {
+      const { data } = await axios.get(`https://geocode-maps.yandex.ru/1.x/`, {
         params: {
           apikey: this.options.yaMap.yAPI,
           format: 'json',
-          geocode: this.singleStudio.address
+          geocode: this.singleStudio.address || this.defaultAddress
         }
-      }).then(resp => {
-        this.singleStudio.lon = +resp.data.response.GeoObjectCollection.featureMember[0].GeoObject.Point.pos.split(' ')[0]
-        this.singleStudio.lat = +resp.data.response.GeoObjectCollection.featureMember[0].GeoObject.Point.pos.split(' ')[1]
       })
-        .catch(err => { console.error('Catched...', err) })
+      this.singleStudio.lon = +data.response.GeoObjectCollection.featureMember[0].GeoObject.Point.pos.split(' ')[0]
+      this.singleStudio.lat = +data.response.GeoObjectCollection.featureMember[0].GeoObject.Point.pos.split(' ')[1]
       this.$nextTick(_ => {
         this.isMarker = true
       })

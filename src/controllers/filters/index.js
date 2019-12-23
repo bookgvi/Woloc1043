@@ -1,56 +1,4 @@
-import studios from '../../api/studios'
-
-const defaultValues = {
-  customers: {
-    search: null
-  },
-  bookings: {
-    studio: null,
-    rooms: null,
-    customer: null,
-    statuses: [0, 1, 2, 3, 4],
-    technical: false,
-    search: null
-  },
-  finances: {
-    'date[startedAt]': null,
-    'date[finishedAt]': null,
-    'time[hourFrom]': 0,
-    'time[hourTo]': 23,
-    purposes: [1, 2, 3, 4, 5, 6, 7, 9],
-    search: null
-  },
-  refunds: {
-    studio: null,
-    rooms: null,
-    statuses: [0, 1, 2, 3],
-    search: null,
-    'date[startedAt]': null,
-    'date[finishedAt]': null,
-    'time[hourFrom]': 0,
-    'time[hourTo]': 23
-  },
-  documents: {
-    search: null,
-    'date[startedAt]': null,
-    'date[finishedAt]': null,
-    'time[hourFrom]': 0,
-    'time[hourTo]': 23
-  },
-  settings: {
-    studio: null
-  },
-  calendar: {
-    studio: null,
-    rooms: null,
-    events: ['photo', 'video', 'event'],
-    price: {
-      min: -1,
-      max: -1
-    }
-  }
-}
-
+import { defaultValues } from './defaultValues.js'
 export default {
   name: 'filters',
   data () {
@@ -94,7 +42,9 @@ export default {
     },
     async reset (page) {
       const { values } = this
-      const { items } = await studios.getAll().then(resp => resp.data)
+      const tempDateRangeFrom = values.calendar.dateRangeFrom
+      const tempDateRangeTo = values.calendar.dateRangeTo
+      const { items } = await this.$app.studios.getAll()
       let [{ rooms }] = items.filter(item => item.id === items[0].id)
       rooms = rooms.map(item => item.id)
       this.values = {
@@ -105,6 +55,8 @@ export default {
         this.setValue(page, 'studio', items[0].id)
         this.setValue(page, 'rooms', rooms)
       }
+      this.setValue('calendar', 'dateRangeFrom', tempDateRangeFrom)
+      this.setValue('calendar', 'dateRangeTo', tempDateRangeTo)
       this.saveToSession()
     }
   }

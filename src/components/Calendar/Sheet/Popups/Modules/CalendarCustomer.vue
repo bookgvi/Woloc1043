@@ -9,41 +9,40 @@
         hide-selected
         @filter="filterFn"
         use-input
-        input-debounce="1000"
+        input-debounce="500"
         hide-dropdown-icon
         options-dense
         placeholder="Пользователь"
-        clearable
         :options="$app.customers.searched.slice(0, 10)"
         :option-value="opt => opt === null ? '' : opt.fullName"
         :option-label="opt => opt === null ? '' : opt.fullName"
-        v-model="customer"
+        v-model="customerName"
+        @input.native="inputNewCustomer"
+        new-value-mode="add"
         )
     .col-12
       q-input.text-body2.text-weight-bold(
         outlined
-        readonly
         mask="#(###)###-##-##"
+        unmasked-value
         placeholder="Телефон"
         v-model="phone"
       )
     .col-12
       q-input.text-body2.text-weight-bold(
         outlined
-        readonly
-        stack-label
         placeholder="Эл. почта"
         v-model="email"
       ) {{ customerComp }}
 </template>
 
 <script>
-
 export default {
   name: 'CalendarCustomer',
   data () {
     return {
       customer: {
+        id: '',
         firstName: '',
         fullName: '',
         phone: '',
@@ -52,12 +51,26 @@ export default {
     }
   },
   computed: {
+    customerName: {
+      get () {
+        return this.customer
+      },
+      set (val) {
+        if (typeof val === 'object') {
+          this.customer = val
+        } else {
+          this.startCustomer.customer = {
+            fullName: val
+          }
+        }
+      }
+    },
     customerComp () {
       return this.customerChange()
     },
     phone: {
       get () {
-        return (this.customer) ? this.customer.phone : ''
+        return this.customer.phone ? this.customer.phone : ''
       },
       set (v) {
         this.customer.phone = v
@@ -65,7 +78,7 @@ export default {
     },
     email: {
       get () {
-        return (this.customer) ? this.customer.email : ''
+        return this.customer.email ? this.customer.email : ''
       },
       set (v) {
         this.customer.email = v
@@ -83,28 +96,25 @@ export default {
       }
       await this.$app.customers.getForCalendar(val.toLowerCase())
       update()
+    },
+    inputNewCustomer (e) {
+      if (!this.customerName.fullName) {
+        this.customerName.fullName = e.data
+      } else {
+        this.customerName.fullName += e.data
+      }
     }
   },
   props: {
-    startCustomer: {
-      type: Object,
-      default: _ => {
-        return {
-          firstName: '',
-          fullName: '',
-          phone: '',
-          email: ''
-        }
-      }
-    },
+    startCustomer: Object,
     isCreate: {
       type: Boolean
     }
   },
   watch: {
-    startCustomer: {
+    'startCustomer.customer': {
       handler (v) {
-        this.customer = (v) ? Object.assign(v)
+        this.customer = v ? Object.assign(v)
           : {
             firstName: '',
             fullName: '',

@@ -11,31 +11,26 @@
             span Залы
         .row.q-pb-md
           .col.q-pr-sm
-            q-select(v-model="currentStudio" :options="data.studios" outlined dense)
+            q-select(v-model="currentStudioVM" :options="studiosNames" outlined dense)
           .col
-            q-select(v-model="currentRoom" :options="roomsNames" outlined dense)
+            q-select(v-model="roomSelectorVM" :options="singleRoomOrAllRooms" outlined dense)
         .row.q-pb-xs
           .col.q-pr-sm
-            span Фон
+            span Выбранный зал
           .col
             span Источник бронирования
         .row.q-pb-md
           .col.q-pr-sm
-            q-select(v-model="currentBackground" :options="data.background" outlined dense)
+            q-input(v-if="!isSingleOrAllRoom[0] && !isSingleOrAllRoom[1]" value="" outlined dense disable)
+            q-input(v-if="isSingleOrAllRoom[0]" :value="currentRoomName" outlined dense disable)
+            q-select(v-if="isSingleOrAllRoom[1]" v-model="currentRoomVM" :options="roomsNames" outlined dense)
           .col
-            q-select(v-model="currentSource" :options="data.bookingSource" @input="changeSource" outlined dense)
-        .row.q-pb-xs
-          .col.q-pr-sm
-            span Ширина
+            q-select(v-model="bookingSourceVM" :options="bookingSourceArray" outlined dense)
+
         .row.q-pb-md
-          .col.q-pr-sm
-            q-input(v-model="data.width" outlined dense)
-          .col.q-pr-sm
-            q-select(v-model="currentUnit" :options="data.widthUnit" outlined dense)
           .col
             q-btn.bg-primary.text-white(
               label="Сгенерировать код"
-              :disable="currentSource === ''"
               @click="generate"
               style="width: 100%;"
               no-caps
@@ -47,8 +42,7 @@
             .text-primary.cursor-pointer(@click="copyWidget" style="text-align: right;") Скопировать
         .row.q-pb-md
           .col
-            textarea.jswidgetArea.q-pa-sm.text-grey-8(v-if="isWidget" rows=3 style="width: 100%;")
-            textarea.jswidgetArea.q-pa-sm.text-grey-8(v-if="!isWidget" v-model="newWidgetCode" rows=30 style="width: 100%;")
+            textarea.jswidgetArea.q-pa-sm.text-grey-8(v-model="newWidgetCode" :rows="rowsForWidget" style="width: 100%;")
 
 </template>
 
@@ -57,84 +51,113 @@ export default {
   name: 'index',
   data () {
     return {
-      currentStudio: '',
-      currentRoom: '',
+      allStudiosAndRooms: [],
+      currentStudioName: '',
+      currentRoomName: '',
+      roomSelector: '',
+      bookingSource: '',
       roomsNames: [],
+      studiosNames: [],
+      singleRoomOrAllRooms: ['Один зал', 'Все залы'],
+      bookingSourceArray: ['Вконтакте', 'Инста', 'Level', 'Facebook'],
       currentRoomId: 1,
-      currentBackground: '',
-      currentSource: '',
-      currentUnit: '',
-      isWidget: true,
       newWidgetCode: '',
-      widgetCode: `<!-- BEGIN UGOLOC CODE {literal} -->
-  <div id='ugoloc'></div>
-  <script type='text/javascript'>
-    var widgetUrl = 'http://ugoloc.greencow.pro';
-    (function () {
-      var room_id = 41;
-      var timestamp = Math.round(Date.now()/10000);
-      var xhr = new XMLHttpRequest();
-      xhr.open('POST', widgetUrl + '/embed/booking.json?id=' + room_id);
-      xhr.onload = function() {
-        if (xhr.status === 200) {
-          var script = document.createElement('script');
-          script.type = 'text/javascript';
-          script.src = widgetUrl + '/assets/embed/ugoloc.embed.js?t=' + timestamp;
-          var styles = document.createElement('link');
-          styles.type = 'text/css';
-          styles.rel = 'stylesheet';
-          styles.href = widgetUrl + '/assets/embed/ugoloc.css?t=' + timestamp;
-          var ugoloc = document.getElementById('ugoloc');
-          var json = JSON.parse(xhr.responseText);
-          document.body.appendChild(styles);
-          ugoloc.innerHTML = json.html;
-          ugoloc.appendChild(script);
-        }
-      };
-      xhr.send();
-    })();
-    script>
-<!-- {/literal} END UGOLOC CODE -->`,
-      data: {}
+      rowsForWidget: 3,
+      isSingleOrAllRoom: false
+    }
+  },
+  computed: {
+    currentStudioVM: {
+      get () {
+        return this.currentStudioName
+      },
+      set (val) {
+        this.currentStudioName = val
+        this.currentRoomVM = ''
+        this.currentRoomId = ''
+        this.roomsNames = []
+        if (!this.allStudiosAndRooms) return
+        const [{ rooms }] = this.allStudiosAndRooms.filter(item => item.name === val)
+        if (!rooms.length) return
+        this.currentRoomVM = rooms[0].name
+        this.currentRoomId = rooms[0].id
+        this.roomsNames = rooms.map(item => item.name)
+      }
+    },
+    currentRoomVM: {
+      get () {
+        return this.currentRoomName
+      },
+      set (val) {
+        this.currentRoomName = val
+        this.allStudiosAndRooms.map(item => item.rooms.forEach(item2 => {
+          if (item2.name === val) this.currentRoomId = item2.id
+        }))
+      }
+    },
+    roomSelectorVM: {
+      get () {
+        return this.roomSelector
+      },
+      set (val) {
+        this.roomSelector = val
+        this.isSingleOrAllRoom = this.singleRoomOrAllRooms.map(item => item === val)
+      }
+    },
+    bookingSourceVM: {
+      get () {
+        return this.bookingSource
+      },
+      set (val) {
+        this.bookingSource = val
+      }
     }
   },
   async created () {
-    this.data = await this.$app.jswidget.getAll()
-    this.currentStudio = this.data.studios[0]
-    this.currentRoom = this.data.rooms[0].name
-    this.roomsNames = this.data.rooms.map(item => item.name)
-    this.currentBackground = this.data.background[0]
-    this.currentUnit = this.data.widthUnit[0]
+    const { items } = await this.$app.studios.getAll()
+    this.allStudiosAndRooms = items
+    this.currentStudioName = items[0].name
+    this.studiosNames = items.map(item => item.name)
+    this.currentRoomName = items[0].rooms[0].name
+    this.currentRoomId = items[0].rooms[0].id
+    this.roomsNames = items[0].rooms.map(item => item.name)
   },
   methods: {
-    generate () {
-      this.currentSource = ''
-      this.isWidget = false
-      const [{ id }] = this.data.rooms.filter(item => item.name === this.currentRoom)
-      let arr = this.widgetCode.split('41')
-      let temp = arr.pop()
-      arr.push(id)
-      arr.push(temp)
-      this.newWidgetCode = arr.join('')
-      arr = this.newWidgetCode.split('script>')
-      temp = arr.pop()
-      arr.push('</')
-      arr.push('script>')
-      arr.push(temp)
-      this.newWidgetCode = arr.join('')
+    async generate () {
+      if ((!this.isSingleOrAllRoom[0] && !this.isSingleOrAllRoom[1]) || !this.bookingSourceVM) {
+        this.showNotif('Выберите зал, Источник бронирования и нажмите Сгенерировать код', 'orange')
+        return
+      }
+      const result = await this.$app.jswidget.getOne(this.currentRoomId)
+      if (result && result !== 'error') {
+        this.rowsForWidget = 30
+        const begin = result.slice(0, 11) + this.bookingSource
+        const middle = result.slice(10, -16)
+        const end = this.bookingSource + result.slice(-17)
+        this.newWidgetCode = begin + middle + end
+        this.showNotif('Виджет сгенерирован', 'primary')
+      } else {
+        this.newWidgetCode = ''
+        this.rowsForWidget = 3
+        this.showNotif('При генерации виджета возникла ошибка')
+      }
     },
     copyWidget () {
-      const widgetNode = document.querySelector('.jswidgetArea textarea')
+      const widgetNode = document.querySelector('.jswidgetArea')
       widgetNode.focus()
       widgetNode.select()
       try {
         document.execCommand('copy')
+        this.showNotif('Код виджета скопирован в буфер обмена', 'green')
       } catch (err) {
         console.error(`Can't copy`)
       }
     },
-    changeSource () {
-      this.isWidget = true
+    showNotif (msg, clr = 'purple') {
+      this.$q.notify({
+        message: msg,
+        color: clr
+      })
     }
   }
 }

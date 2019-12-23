@@ -1,7 +1,9 @@
 import api from 'src/api'
+import crudMixin from '../crudMixin'
 
 export default {
   name: 'customers',
+  mixins: [crudMixin],
   data () {
     return {
       searched: [],
@@ -19,10 +21,6 @@ export default {
         this.searched = data.items
         this.loading.list = false
       }
-      return data
-    },
-    async getAll (page, filter) {
-      const { data } = await api.customers.getAll(page, filter)
       return data
     }
   }

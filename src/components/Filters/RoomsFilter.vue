@@ -23,7 +23,7 @@
               :key="reloadCheckBox"
             )
             .check__box1.cursor-pointer(@click="checkUncheck(item.id)")
-            .check__box.cursor-pointer(@click="checkUncheck(item.id)" :style="{ backgroundColor: item.color, opacity: 0.3 }")
+            .check__box.cursor-pointer(@click="checkUncheck(item.id)" :style="{ backgroundColor: `#${item.color}`, opacity: 0.3 }")
             label.check.check__label.cursor-pointer(:for="`checkbox${index}`") {{ models[index].name }}
           .row.q-pl-lg.q-pt-md
             input.check__input.q-mt-xs(

@@ -92,20 +92,19 @@
                   span.text-body2 до {{ forNewBooking.to + 1 + ":00" }}
                 .row.col-12.justify-between.q-py-md
                   .col-6.q-px-xs
-                    q-btn.fit(
+                    q-btn.fit.bg-primary.text-white(
                       icon="fa fa-check"
-                      color="positive"
                     )
                       booking-type-menu.fit(
                         @fastClick="setNewTechnical(date)"
                         @commonClick="setNewBooking(date, time)"
                       )
                   .col-6.q-px-xs
-                    q-btn.fit(
+                    q-btn.fit.text-grey-7(
                       icon="fa fa-ban"
-                      color="negative"
                       v-close-popup
                       @click="closePopupForNewBooking()"
+                      outline
                     )
         template(#day-header="{ date }")
           .row.justify-left.q-px-md.q-py-md(
@@ -201,9 +200,8 @@
  </template>
 
 <script>
-import { colors, dom, date } from 'quasar'
+import { colors, dom } from 'quasar'
 import { EVENT_TYPES } from 'src/common/constants'
-import roomsColors from 'src/common/rooms/colors'
 import UpdateEventDialog from './Popups/UpdateEventDialog'
 import FirstColumn from './Modules/FirstColumn'
 import Timeline from './Modules/Timeline'
@@ -211,8 +209,6 @@ import BookingTypeMenu from './Popups/BookingTypeMenu'
 import NewTechnicalDialog from './Popups/NewTechnicalDialog'
 
 const { height, css, style } = dom
-
-const usedColors = {}
 
 export default {
   name: 'CalendarSheet',
@@ -224,8 +220,8 @@ export default {
   data () {
     return {
       range: {
-        from: '2019-05-01',
-        to: '2020-01-01'
+        from: '',
+        to: ''
       },
       borders: {
         top: 0,
@@ -265,8 +261,8 @@ export default {
     if (this.$route.query.updateBookings) {
       this.findBooking(null, this.$route.query.updateBookings)
     }
-    this.setWeekRange()
-    this.calendarToday()
+    this.selectedDate = this.filter.dateRangeFrom
+    // this.calendarToday()
   },
   computed: {
     duration () {
@@ -292,16 +288,6 @@ export default {
     }
   },
   methods: {
-    setWeekRange () {
-      const currentDate = new Date()
-      const fromMonday = currentDate.getDay() - 1
-      const toSunday = 7 - currentDate.getDay()
-      const currentDateMS = +currentDate
-      const fromMondayMS = currentDateMS - 24 * fromMonday * 1000 * 3600
-      const toSundayMS = currentDateMS + 24 * toSunday * 1000 * 3600
-      this.range.from = date.formatDate(new Date(fromMondayMS), 'YYYY-MM-DD')
-      this.range.to = date.formatDate(new Date(toSundayMS), 'YYYY-MM-DD')
-    },
     closePopupForNewBooking () {
       this.forNewBooking.date = ''
       this.forNewBooking.from = 0
@@ -390,7 +376,7 @@ export default {
       })
       if (newBooking) {
         const id = item.id
-        await this.$app.bookings.updateOne(id, newBooking)
+        await this.$app.bookings.updateOne({ id: id, data: newBooking })
       }
       item.isResize = false
       await this.loadData()
@@ -611,6 +597,8 @@ export default {
         from: this.$moment(startDate).format('YYYY-MM-DD'),
         to: this.$moment(startDate).add(6, 'days').format('YYYY-MM-DD')
       })
+      this.$app.filters.setValue('calendar', 'dateRangeFrom', this.range.from)
+      this.$app.filters.setValue('calendar', 'dateRangeTo', this.range.to)
       // console.log('range', this.range.from, this.range.to)
       await this.loadData()
     },
@@ -619,13 +607,6 @@ export default {
     },
     getTime (timestamp, mask = 'HH:mm') {
       return timestamp.format(mask)
-    },
-    getColor ({ room: { id } }) {
-      if (!(id in usedColors)) {
-        const i = Object.keys(usedColors).length
-        usedColors[id] = roomsColors[i < roomsColors.length ? i : 0]
-      }
-      return usedColors[id].color
     },
     setIcon (action) {
       const icon = EVENT_TYPES[action].icon
@@ -656,12 +637,11 @@ export default {
       return s
     },
     badgeStyles (event, type, timeStartPos, timeDurationHeight) {
-      let bgcolor = `${event.bgcolor}40`
       let s = {
         'z-index': 2,
         'box-shadow': `inset 3px -3px 0 ${event.bgcolor}`,
         'font-size': '13px',
-        'background-color': bgcolor,
+        'background-color': event.bgcolor,
         'color': colors.lighten(event.bgcolor, -30),
         'align-items': 'flex-start'
       }
@@ -701,6 +681,15 @@ export default {
       }
       this.technicalDialogState = false
       this.closePopupForNewBooking()
+    },
+    hexTOrgb (color, opacity) {
+      if (color[0] === '#') {
+        color = color.slice(1, color.length)
+      }
+      const r = parseInt(color.slice(0, 2), 16)
+      const g = parseInt(color.slice(2, 4), 16)
+      const b = parseInt(color.slice(4, 6), 16)
+      return `rgba(${r}, ${g}, ${b}, ${opacity > 1 ? opacity / 100 : opacity})`
     }
   },
   watch: {
@@ -748,7 +737,8 @@ export default {
               date: this.getDate(from),
               time: this.getTime(from),
               duration: diff,
-              bgcolor: this.getColor(booking),
+              bgcolor: this.hexTOrgb(booking.room.color, 0.2),
+              opacity: 0.3,
               icon: this.setIcon(booking.eventType),
               technical: booking.technical,
               from: +this.getTime(from, 'HH'),

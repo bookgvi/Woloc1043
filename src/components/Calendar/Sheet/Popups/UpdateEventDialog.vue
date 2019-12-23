@@ -1,7 +1,6 @@
 <template lang="pug">
   q-dialog(
     v-model="dialogState"
-    persistent
   )
     q-card.q-py-md(
       style="width: 330px"
@@ -24,7 +23,7 @@
               .col-7.q-py-sm
                 span.text-grey {{ customerSlot }}
             calendar-customer.q-pa-md(
-              :startCustomer="newBooking.customer"
+              :startCustomer="newBooking"
               :isCreate="isCreate"
               @customerChange="newBooking.customer = $event"
             )
@@ -280,7 +279,7 @@ export default {
       this.$emit('setQueryState', state)
     },
     setParamsForPost () {
-      if (!this.newBooking.customer || !this.newBooking.customer.id) {
+      if (!this.newBooking.customer.fullName) {
         Notify.create({
           message: `Выберите клиента`,
           color: 'negative',
@@ -319,7 +318,14 @@ export default {
       }
       const params = {
         roomId: this.newBooking.room.id,
-        consumerId: this.newBooking.customer.id,
+        consumerId: this.newBooking.customer.id || null,
+        customer: {
+          fullName: this.newBooking.customer.fullName,
+          firstName: this.newBooking.customer.firstName || '',
+          phone: this.newBooking.customer.phone || '',
+          email: this.newBooking.customer.email || '',
+          id: this.newBooking.customer.id || null
+        },
         reserveFrom: this.newBooking.reservedFrom,
         reserveTo: this.newBooking.reservedTo,
         priceType: this.newBooking.eventType,
@@ -399,7 +405,7 @@ export default {
       } else {
         const payload = this.setParamsForPut()
         if (payload) {
-          await this.$app.bookings.updateOne(payload.id, payload.data)
+          await this.$app.bookings.updateOne({ id: payload.id, data: payload.data })
           if (this.$app.bookings.idOfJustAdded !== 0) {
             this.$emit('setQueryState', true)
             this.$app.extras.extrasForRoom = []

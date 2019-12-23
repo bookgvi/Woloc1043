@@ -8,7 +8,7 @@
 </template>
 
 <script>
-import finances from '../../../api/finances'
+import { finances } from '../../../api/finances'
 export default {
   name: 'index',
   methods: {

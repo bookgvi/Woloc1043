@@ -61,7 +61,7 @@ export default {
           name: item.name,
           total: item.totalProfit,
           percents: percents,
-          color: '#' + ((1 << 24) * Math.random() | 0).toString(16)
+          color: this.hexTOrgb(item.color, 0.3)
         }
         return point
       })
@@ -78,6 +78,15 @@ export default {
         dateTo: this.$moment(this.date.to).format('YYYY-MM-DD'),
       })
     },
+    hexTOrgb (color, opacity) {
+      if (color[0] === '#') {
+        color = color.slice(1, color.length)
+      }
+      const r = parseInt(color.slice(0, 2), 16)
+      const g = parseInt(color.slice(2, 4), 16)
+      const b = parseInt(color.slice(4, 6), 16)
+      return `rgba(${r}, ${g}, ${b}, ${opacity > 1 ? opacity / 100 : opacity})`
+    }
   },
   watch: {
     date: {

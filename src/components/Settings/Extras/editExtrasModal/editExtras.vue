@@ -74,7 +74,7 @@
 <script>
 import FiltersList from '../../../Filters/FiltersList'
 import RoomsFilter from '../../../Filters/RoomsFilter'
-import extras from '../../../../api/extras'
+import { extras } from '../../../../api/extras'
 export default {
   name: 'modalForExtras',
   props: {
@@ -135,7 +135,7 @@ export default {
       }
       if (this.isPost) {
         this.dataset.studio = this.singleStudio.id
-        const result = await extras.createExtra(this.dataset)
+        const result = await this.$app.extras.addNew(this.dataset)
         if (!result.hasOwnProperty('data')) {
           result.errors.forEach(item => {
             if (item.source !== 'rooms') this.dataset[item.source] = ''
@@ -148,7 +148,7 @@ export default {
       } else {
         this.publishedAt = new Date()
         this.dataset.amount = Number(this.dataset.amount)
-        const result = await extras.updateExtra(this.dataset.id, this.dataset)
+        const result = await this.$app.extras.updateOne({ id: this.dataset.id, data: this.dataset })
         if (!result.hasOwnProperty('data')) {
           this.showNotif('Ошибка при сохранении изменений')
         } else {

@@ -11,10 +11,11 @@
         span.text-red *
         q-input(
           class="limit"
-          v-model="singleStudio.limit" mask="#####"
-          unmasked-value
-          :rules="[val => !!val || '* Обязательно для заполнения']"
+          v-model="singleStudio.limit"
+          mask="#####"
+          :rules="[val => !!val || 'Обязательно для заполнения']"
           lazy-rules
+          unmasked-value
           outlined
           dense
         )
@@ -24,9 +25,10 @@
         q-input(
           class="height"
           v-model="singleStudio.height"
-          mask="#####" unmasked-value
-          :rules="[val => !!val || '* Обязательно для заполнения']"
+          mask="#####"
+          :rules="[val => !!val || 'Обязательно для заполнения']"
           lazy-rules
+          unmasked-value
           outlined
           dense
         )
@@ -39,10 +41,9 @@
           class="yardage"
           v-model="singleStudio.yardage"
           mask="#####"
-          unmasked-value
-          :rules="[val => !!val || '* Обязательно для заполнения']"
+          :rules="[val => !!val || 'Обязательно для заполнения']"
           lazy-rules
-          @input.native="hInput"
+          unmasked-value
           outlined
           dense
         )
@@ -55,12 +56,6 @@ export default {
   name: 'specifications',
   props: {
     singleStudio: Object
-  },
-  methods: {
-    hInput () {
-      console.log(this.$refs.yardage)
-      this.$emit('requiredFields', this.$refs.yardage)
-    }
   }
 }
 </script>

@@ -55,7 +55,7 @@
 <script>
 import Timeline from 'src/components/Calendar/Sheet/Modules/Timeline'
 import { colors } from 'quasar'
-import { formatPrice, getDate, getTime, getColor, setIcon } from 'src/utils/helpersForCalendar'
+import { formatPrice, getDate, getTime, setIcon } from 'src/utils/helpersForCalendar'
 
 export default {
   name: 'Calendar',
@@ -111,7 +111,7 @@ export default {
       let s = {
         'box-shadow': `inset 3px -3px 0 ${event.bgcolor}`,
         'font-size': '13px',
-        'background-color': `${event.bgcolor}40`,
+        'background-color': event.bgcolor,
         'color': colors.lighten(event.bgcolor, -30),
         'align-items': 'flex-start'
       }
@@ -142,6 +142,15 @@ export default {
         dateTo: this.selectedDate
       })
     },
+    hexTOrgb (color, opacity) {
+      if (color[0] === '#') {
+        color = color.slice(1, color.length)
+      }
+      const r = parseInt(color.slice(0, 2), 16)
+      const g = parseInt(color.slice(2, 4), 16)
+      const b = parseInt(color.slice(4, 6), 16)
+      return `rgba(${r}, ${g}, ${b}, ${opacity > 1 ? opacity / 100 : opacity})`
+    }
   },
   watch: {
     async isAllDay () {
@@ -209,7 +218,7 @@ export default {
                 isExtras: isExtras,
                 technical: booking.technical,
                 roomNameSlot: 'Зал ' + booking.room.name,
-                roomColorSlot: '#' + ((1 << 24) * Math.random() | 0).toString(16),
+                roomColorSlot: this.hexTOrgb(booking.room.color, 0.3),
                 fullNameSlot: slot.fullName,
                 phoneSlot: slot.phone,
                 eventSlot: slot.event,
@@ -217,7 +226,7 @@ export default {
                 date: getDate(from),
                 time: getTime(from),
                 duration: diff,
-                bgcolor: getColor(booking),
+                bgcolor: this.hexTOrgb(booking.room.color, 0.3),
                 icon: setIcon(booking.eventType),
                 devInfo: {
                   time: {

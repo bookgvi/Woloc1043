@@ -32,7 +32,7 @@ import columns from './columns'
 import details from './details'
 import DataTable from 'components/DataTable'
 import editExtras from '../editExtrasModal/editExtras'
-import extras from '../../../../api/extras'
+import { extras } from '../../../../api/extras'
 export default {
   name: 'extrasTable',
   components: { DataTable, editExtras },

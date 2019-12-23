@@ -8,17 +8,15 @@
           :rooms="rooms"
           :isSave="isSave"
           :services="services"
-          :vendors="vendors"
+          :facilities="facilities"
           @updateStudio="updateStudio"
           @newStudio="newStudio"
           @createNewStudio="createNewStudio"
-          @reloadPage="reloadPage"
         )
 </template>
 
 <script>
 import location from './main'
-import studios from '../../../api/studios'
 export default {
   name: 'setting',
   components: {
@@ -28,56 +26,75 @@ export default {
     return {
       pageReload: 0,
       id: this.$app.filters.getValues('settings').studio,
-      isRequiredModal: false,
       currentTab: 'Локация',
       tabs: ['Локация'],
-      allStudiosName: [],
       singleStudio: {},
       currentStudio: '',
       isSave: false,
       rooms: [],
       services: [],
-      vendors: []
+      facilities: [],
+      requiredFields: ['name', 'phone', 'limit', 'height', 'yardage', 'address']
     }
   },
   computed: {
-    studioID: {
-      get () {
-        this.singleStudioM()
-        return this.$app.filters.getValues('settings').studio
-      },
-      set (val) {
-        this.pageReload++
-      }
+    studioID () {
+      this.singleStudioM()
+      return this.$app.filters.getValues('settings').studio
     }
   },
-  async mounted () {
+  mounted () {
     this.singleStudioM()
   },
   methods: {
     async singleStudioM () {
-      const { items } = await studios.getAll().then(resp => resp.data)
-      let { studio } = this.$app.filters.getValues('settings')
-      if (!studio) return
-      const rooms = items[0].rooms
-      this.rooms = rooms
-      this.singleStudio = await studios.getOne(studio).then(resp => resp.data)
-      this.allStudiosName = items.map(item => item.name)
+      let filter = await this.$app.filters.getValues('settings')
+      if (!filter.studio) return
+      if (!this.singleStudio) return
+      this.rooms = this.$app.rooms.getFiltered(filter)
+      if (!this.rooms) return
+      this.singleStudio = await this.$app.studios.getOne(filter.studio)
       this.services = this.singleStudio.services
-      this.vendors = this.singleStudio.vendors
+      this.facilities = this.singleStudio.facilities
     },
     async updateStudio (services, vendors) {
+      if (
+        !this.singleStudio.name ||
+        !this.singleStudio.phone ||
+        !this.singleStudio ||
+        !this.singleStudio.limit ||
+        !this.singleStudio.height ||
+        !this.singleStudio.yardage ||
+        !this.singleStudio.address
+      ) {
+        console.warn('Заполните обязательные поля')
+        this.showNotif('Заполните обязательные поля')
+        this.requiredFields.forEach(item => {
+          this.highLightRequired(item)
+        })
+        return
+      }
       let { studio } = this.$app.filters.getValues('settings')
       if (!studio) {
         studio = this.currentStudio
       }
-      const result = await studios.updateStudio(studio, this.singleStudio)
-      if (result.hasOwnProperty('data') && result.data.hasOwnProperty('name')) {
-        this.showNotif('Изменения сохранены', 'green')
-      } else if (result.hasOwnProperty('errors')) {
-        this.showNotif('Проверьте обязательные поля')
+      let result = ''
+      if (this.isSave) {
+        result = await this.$app.studios.addNew(this.singleStudio)
       } else {
-        this.showNotif('При сохранении изменений произошла ошибка', 'red')
+        let { studio } = this.$app.filters.getValues('settings')
+        if (!studio) {
+          studio = this.currentStudio
+        }
+        result = await this.$app.studios.updateOne({ id: studio, data: this.singleStudio })
+      }
+      if (result && result.hasOwnProperty('errors') && result.errors.length) {
+        this.showNotif('Ошибка создания локации. Проверьте обязательные поля')
+        result.errors.forEach(item => {
+          this.highLightRequired(item.source)
+        })
+      } else if (result.hasOwnProperty('data')) {
+        this.showNotif('Данные сохранены!', 'green')
       }
     },
     async newStudio () {
@@ -85,32 +102,56 @@ export default {
       this.singleStudio = { lat: 55.786419, lon: 37.725433 }
       this.rooms = []
       this.services = []
-      this.vendors = []
+      this.facilities = []
     },
     async createNewStudio () {
-      const result = await studios.createStudio(this.singleStudio)
-      if (result.hasOwnProperty('data') && result.data.hasOwnProperty('name')) {
-        this.showNotif('Изменения сохранены', 'green')
-      } else if (result.hasOwnProperty('errors')) {
-        this.showNotif('Проверьте обязательные поля')
-        result.errors.forEach(item => {
-          this.highLightRequired(item.source)
+      if (
+        !this.singleStudio.name ||
+        !this.singleStudio.phone ||
+        !this.singleStudio ||
+        !this.singleStudio.limit ||
+        !this.singleStudio.height ||
+        !this.singleStudio.yardage ||
+        !this.singleStudio.address
+      ) {
+        console.warn('Заполните обязательные поля')
+        this.showNotif('Заполните обязательные поля')
+        this.requiredFields.forEach(item => {
+          this.highLightRequired(item)
         })
+        return
+      }
+      let result = ''
+      if (this.isSave) {
+        result = await this.$app.studios.addNew(this.singleStudio)
       } else {
-        this.showNotif('Ошибка при создании локации', 'red')
+        let { studio } = this.$app.filters.getValues('settings')
+        if (!studio) {
+          studio = this.currentStudio
+        }
+        result = await this.$app.studios.updateOne({ id: studio, data: this.singleStudio })
+      }
+      if (result) {
+        if (result && result.hasOwnProperty('errors') && result.errors.length) {
+          this.showNotif('Ошибка создания локации. Проверьте обязательные поля')
+          result.errors.forEach(item => {
+            this.singleStudio[item.source] = ''
+            this.highLightRequired(item.source)
+          })
+        } else if (result.hasOwnProperty('data')) {
+          this.showNotif('Данные сохранены!', 'green')
+          this.isSave = false
+          await this.$app.filters.setValue('settings', 'studio', result.data.id)
+          this.$router.push({ path: '/settings/room', query: { createRoom: true } })
+        }
       }
     },
-    async highLightRequired (fieldClass) {
+    highLightRequired (fieldClass) {
       const field = document.querySelector(`.${fieldClass} input`)
-      await this.$nextTick(_ => {
+      this.$nextTick(_ => {
         field.focus()
-      })
-      await this.$nextTick(_ => {
         field.blur()
       })
-    },
-    reloadPage () {
-      this.pageReload++
     },
     showNotif (msg, clr = 'purple') {
       this.$q.notify({

@@ -38,7 +38,7 @@ const routes = [
           // { path: 'promo', component: () => import('components/Settings/Promocodes/index.vue') },
           // { path: 'rules', component: () => import('components/Settings/Rules/index.vue') },
           { path: 'organization', component: () => import('components/Settings/OrganizationData/index.vue') },
-          // { path: 'jswidget', component: () => import('components/Settings/JSWidget/index.vue') },
+          { path: 'jswidget', component: () => import('components/Settings/JSWidget/index.vue') },
           // { path: 'notifications', component: () => import('components/Settings/Notifications/index.vue') },
         ]
       }

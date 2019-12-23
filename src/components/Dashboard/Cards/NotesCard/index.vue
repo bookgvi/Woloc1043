@@ -162,7 +162,7 @@ export default {
       }
       if (this.itemBuffer.id > 0) {
         const id = this.itemBuffer.id
-        await this.$app.organizationNotes.updateOne(id, params)
+        await this.$app.organizationNotes.updateOne({ id, data: params })
       } else {
         await this.$app.organizationNotes.addNew(params)
       }

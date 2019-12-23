@@ -1,8 +1,10 @@
 import api from '../../api'
 import { sortBy } from 'lodash'
+import crudMixin from '../crudMixin'
 
 export default {
   name: 'finances',
+  mixins: [crudMixin],
   data () {
     return {
       loading: {
@@ -13,23 +15,12 @@ export default {
       dashboardFinancesList: [],
     }
   },
-  created () {
-  },
   computed: {
     all () {
       return sortBy(this.list, 'title')
     }
   },
   methods: {
-    async getAll (page, filter) {
-      this.loading.list = true
-      const { data } = await api.finances.getAll(page, filter)
-      if (data) {
-        this.list = data.items
-        this.loading.list = false
-      }
-      return data
-    },
     async dashboardFinances (payload) {
       this.loading.list = true
       const res = await api.finances.dashboardFinances(payload)

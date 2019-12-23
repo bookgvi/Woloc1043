@@ -22,7 +22,7 @@
       :studio="initStudio"
       :startDate="date"
       :isAllDay="isAllDay"
-      :bookings="$app.bookings.calendarList"
+      :bookings="$app.bookings.rawCalendarList"
     )
 </template>
 

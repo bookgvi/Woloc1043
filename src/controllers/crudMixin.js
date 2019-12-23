@@ -7,24 +7,11 @@ export default {
         list: false,
         one: false
       },
+      pageName: this.$options.name,
       list: [],
       calendarList: []
     }
   },
-  methods: {
-    async getAll (page, filter) {
-      this.loading.list = true
-      const { name } = this.$options
-      const { data } = await api[name].getAll(page, filter)
-      if (data) {
-        this.list = data.items
-        this.loading.list = false
-      }
-
-      return data
-    },
-  },
-
   watch: {
     'loading.list' (v) {
       if (v) {
@@ -39,6 +26,50 @@ export default {
       } else {
         this.$q.loading.hide()
       }
+    }
+  },
+  methods: {
+    async getAll (page, filter) {
+      this.loading.list = true
+      const { data } = await api[this.pageName].getAll(page, filter)
+      if (data) {
+        this.list = data.items || data
+      }
+      this.loading.list = false
+      return data
+    },
+    async getOne (id) {
+      this.loading.one = true
+      const { data } = await api[this.pageName].getOne({ id })
+      this.loading.one = false
+      return data
+    },
+    async addNew (payload) {
+      this.loading.one = true
+      this.idOfJustAdded = 0
+      const res = await api[this.pageName].addNew(payload)
+      if (res) {
+        this.idOfJustAdded = res.id
+      }
+      this.loading.one = false
+      return res
+    },
+    async updateOne (payload) {
+      this.loading.one = true
+      const res = await api[this.pageName].updateOne(payload)
+      if (res) {
+        this.idOfJustAdded = res.id
+      }
+      this.loading.one = false
+      return res
+    },
+    async deleteOne (id) {
+      this.loading.one = true
+      const res = await api[this.pageName].deleteOne({ id })
+      if (!res) {
+      }
+      this.loading.one = false
+      return res
     }
   }
 }

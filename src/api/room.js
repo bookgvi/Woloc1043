@@ -1,77 +1,51 @@
 import api from './instance'
-import room from '../mocks/room'
+import roomMock from 'src/mocks/room'
+import { AbstractAPI } from './AbstractAPI'
 const API_URL = process.env.API_CABINET_URL
-export default {
-  getDefault: async () => {
-    const r = {
-      data: Object.assign({}, room)
-    }
-    return r
-  },
-  getEmpty: async () => {
-    try {
-      const r = await api.get(`${API_URL}/room/additions`)
-      return r.data.data
-    } catch (e) {
-      console.warn('catch :: room :: getEmptyDataForRoom', e)
-    }
-  },
-  getOne: async (id) => {
-    try {
-      const r = await api.get(`${API_URL}/room/${id}`)
-      return r.data.data
-    } catch (e) {
-      console.warn('catch :: room :: getSingleRoom', e)
-    }
-  },
-  getBackgrounds: async (id) => {
-    try {
-      const r = await api.get(`${API_URL}/room/backgrounds`)
-      return r.data.data
-    } catch (e) {
-      console.warn('catch :: room :: getBackgrounds', e)
-    }
-  },
-  getInteriors: async (id) => {
-    try {
-      const r = await api.get(`${API_URL}/room/interiors`)
-      return r.data.data
-    } catch (e) {
-      console.warn('catch :: room :: getInteriors', e)
-    }
-  },
-  getCharacteristics: async (id) => {
-    try {
-      const r = await api.get(`${API_URL}/room/characteristics`)
-      return r.data.data
-    } catch (e) {
-      console.warn('catch :: room :: getCharacteristics', e)
-    }
-  },
-  getExtras: async (id) => {
-    try {
-      const r = await api.get(`${API_URL}/room/extras`)
-      return r.data.data
-    } catch (e) {
-      console.warn('catch :: room :: getExtras', e)
-    }
-  },
-  createRoom: async roomData => {
-    try {
-      const status = await api.post(`${API_URL}/room`, roomData)
-      return status.data
-    } catch (err) {
-      console.warn('catch :: studios :: createRoom', err)
-      return err
-    }
-  },
-  updateRoom: async (id, roomData) => {
-    try {
-      const status = await api.put(`${API_URL}/room/${id}`, roomData)
-      return status.data
-    } catch (err) {
-      console.warn('catch :: studios :: updateRoom', err)
-      return err
-    }
+export const room = new AbstractAPI(`${API_URL}/room`)
+room.getDefault = async function () {
+  const r = {
+    data: Object.assign({}, roomMock)
+  }
+  return r
+}
+room.getEmpty = async function () {
+  try {
+    const r = await api.get(`${API_URL}/room/additions`)
+    return r.data.data
+  } catch (e) {
+    console.warn('catch :: room :: getEmptyDataForRoom', e)
+  }
+}
+room.getBackgrounds = async function (id) {
+  try {
+    const r = await api.get(`${API_URL}/room/backgrounds`)
+    return r.data.data
+  } catch (e) {
+    console.warn('catch :: room :: getBackgrounds', e)
+  }
+}
+room.getInteriors = async function (id) {
+  try {
+    const r = await api.get(`${API_URL}/room/interiors`)
+    return r.data.data
+  } catch (e) {
+    console.warn('catch :: room :: getInteriors', e)
+  }
+}
+room.getCharacteristics = async function (id) {
+  try {
+    const r = await api.get(`${API_URL}/room/characteristics`)
+    return r.data.data
+  } catch (e) {
+    console.warn('catch :: room :: getCharacteristics', e)
+  }
+}
+room.getExtras = async function (id) {
+  try {
+    const r = await api.get(`${API_URL}/room/extras`)
+    return r.data.data
+  } catch (e) {
+    console.warn('catch :: room :: getExtras', e)
   }
 }

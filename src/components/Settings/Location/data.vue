@@ -9,7 +9,7 @@
           class="name"
           v-model="singleStudio.name"
           placeholder="Название студии"
-          :rules="[val => !!val || '* Обязательно для заполнения']"
+          :rules="[val => !!val || 'Обязательно для заполнения']"
           lazy-rules
           outlined
           dense
@@ -24,7 +24,8 @@
           placeholder="+7 (800) 800 0123"
           mask="+# (###) ### ####"
           unmasked-value
-          :rules="[val => !!val || '* Обязательно для заполнения', val => val.length < 12 || 'Телефон должен содержать не менее 11 цифр']"
+          type="tel"
+          :rules="[val => !!val || 'Обязательно для заполнения']"
           lazy-rules
           outlined
           dense
@@ -36,7 +37,8 @@
           class="email"
           v-model="singleStudio.email"
           placeholder="email@doamin.com"
-          :rules="[val => !!val || '* Обязательно для заполнения', val => val.length > 3 || 'Некорректный email']"
+          type="email"
+          :rules="[val => !!val || 'Обязательно для заполнения']"
           lazy-rules
           outlined
           dense
