@@ -35,7 +35,7 @@ export default {
       rooms: [],
       services: [],
       facilities: [],
-      requiredFields: ['name', 'phone', 'limit', 'height', 'yardage', 'address']
+      requiredFields: ['name', 'phone', 'limit', 'email', 'height', 'yardage', 'address']
     }
   },
   computed: {
@@ -64,6 +64,7 @@ export default {
       if (
         !this.singleStudio.name ||
         !this.singleStudio.phone ||
+        !this.singleStudio.email ||
         !this.singleStudio ||
         !this.singleStudio.limit ||
         !this.singleStudio.height ||
@@ -124,6 +125,7 @@ export default {
       if (
         !this.singleStudio.name ||
         !this.singleStudio.phone ||
+        !this.singleStudio.email ||
         !this.singleStudio ||
         !this.singleStudio.limit ||
         !this.singleStudio.height ||
