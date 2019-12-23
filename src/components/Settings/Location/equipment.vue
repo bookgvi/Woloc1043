@@ -8,8 +8,12 @@
             :default-opened="hasVendor(item)"
           )
             .col.q-pl-md
-              .row(v-for="facility in item.vendors" :key="facility.id")
-                q-checkbox(v-model="facility.presentsInStudio" :label="facility.name")
+              .row(v-if="item.vendors.length >= defaultCount")
+                .col-6(v-for="facility in item.vendors" :key="facility.id")
+                  q-checkbox(v-model="facility.presentsInStudio" :label="facility.name")
+              .row(v-else)
+                .col-12(v-for="facility in item.vendors" :key="facility.id")
+                  q-checkbox(v-model="facility.presentsInStudio" :label="facility.name")
           q-separator
 </template>
 
@@ -20,7 +24,8 @@ export default {
   },
   data () {
     return {
-      isOpen: false
+      isOpen: false,
+      defaultCount: 7
     }
   },
   methods: {
