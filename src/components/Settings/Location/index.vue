@@ -12,6 +12,7 @@
           @updateStudio="updateStudio"
           @newStudio="newStudio"
           @createNewStudio="createNewStudio"
+          @reloadPage="pageReload++"
         )
 </template>
 

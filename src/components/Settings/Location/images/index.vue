@@ -9,36 +9,34 @@
     .hasServerData(v-if="isServerResponse")
       .row.no-wrap.q-pb-lg(v-if="!isShow")
         draggable(v-model="singleStudioVM.images" @change="changeSortField(singleStudioVM.images)")
-          .inline-block(v-for="index in Math.min(4, singleStudioVM.images.length)" :key="index" title="Drag and drop")
+          .inline-block(v-for="index in Math.min(defaultImgCount, singleStudioVM.images.length)" :key="index" title="Drag and drop")
             q-img.q-mr-sm.q-mb-sm.cursor-pointer(
               v-if="!singleStudioVM.images[index - 1].isDeleted"
-              :src="singleStudioVM.images[index - 1].src"
+              :src="srcVM(singleStudioVM.images[index - 1].src)"
               style="height: 140px; width: 140px"
-              @click="deleteImg(singleStudioVM.images[index - 1], index- 1)"
             )
-              q-btn.absolute-top-right(icon="close" class="block" dense flat color="white" title="close")
+              q-btn.absolute-top-right(icon="close" class="block" dense flat color="white" title="close" @click="deleteImg(singleStudioVM.images[index - 1], index- 1)")
               template(v-slot:error)
-                .absolute-full.flex.flex-center.bg-grey-6.text-white Не удалось загрузить изображение (sort: {{ singleStudioVM.images[index - 1].sort }}, id: {{ singleStudioVM.images[index - 1].id }})
+                .absolute-full.flex.flex-center.bg-grey-6.text-white Не удалось загрузить изображение
       .row.no-wrap.q-pb-lg(v-if="isShow")
         draggable(v-model="singleStudioVM.images" @change="changeSortField(singleStudioVM.images)")
           .inline-block(v-for="(item, index) in singleStudioVM.images" :key="index" title="Drag and drop")
             q-img.q-mr-sm.q-mb-sm.cursor-pointer(
               v-if="!item.isDeleted"
-              :src="item.src"
+              :src="srcVM(item.src)"
               style="height: 140px; width: 140px"
-              @click="deleteImg(singleStudioVM.images[index - 1], index- 1)"
             )
-              q-btn.absolute-top-right(icon="close" class="block" dense flat color="red" title="close")
+              q-btn.absolute-top-right(icon="close" class="block" dense flat color="red" title="close" @click="deleteImg(singleStudioVM.images[index - 1], index- 1)")
               template(v-slot:error)
-                .absolute-full.flex.flex-center.bg-grey-6.text-white Не удалось загрузить изображение (sort: {{ item.sort }}, id: {{ item.id }})
+                .absolute-full.flex.flex-center.bg-grey-6.text-white Не удалось загрузить изображение
       .row
         .col
-          .cursor-pointer(v-if="!isShow && singleStudioVM.images.length > 4" @click="isShow = !isShow" style="font-size: 18px")
+          .cursor-pointer(v-if="!isShow && singleStudioVM.images.length > defaultImgCount" @click="isShow = !isShow" style="font-size: 18px")
             q-icon(name="keyboard_arrow_down")
-            span.text-primary &nbsp; Показать еще {{ singleStudioVM.images.length - 4 }} изображений
+            span.text-primary &nbsp; Показать еще {{ singleStudioVM.images.length - defaultImgCount }} изображений
           .cursor-pointer(v-if="isShow" @click="isShow = !isShow" style="font-size: 18px")
             q-icon(name="keyboard_arrow_up")
-            span.text-primary &nbsp; Скрыть все изображения
+            span.text-primary &nbsp; Скрыть изображения
     q-dialog(v-model="isModalForUploadFile")
       q-card
         uploadForm(@closeUploadDialog="closeUploadDialog" :singleStudio="singleStudio")
@@ -56,6 +54,7 @@ export default {
     }
   },
   data: () => ({
+    defaultImgCount: 4,
     isShow: false,
     isModalForUploadFile: false,
     isServerResponse: false,
@@ -76,6 +75,9 @@ export default {
     }
   },
   methods: {
+    srcVM (val) {
+      return `http://pre.ugoloc.ucann.ru/${val}`
+    },
     imgSortMethod () {
       this.singleStudioVM.images.sort((current, prev) => {
         if (current.sort === prev.sort) return 0
