@@ -3,7 +3,7 @@
     h6.q-mb-md Изображения
     .row.q-pb-sm
       .col
-        q-btn.q-btn--no-uppercase(label="Выбрать файл" @click="isModalForUploadFile = true" outline dense)
+        q-btn.q-btn--no-uppercase(label="Выбрать файл" @click="showUploadFileDialog" outline dense)
         q-btn.q-pl-xs(@click="$emit('reloadPage')" dense flat)
           q-icon(name="cached" style="font-size: 1.5em;")
     .hasServerData(v-if="isServerResponse")
@@ -102,6 +102,13 @@ export default {
       } else {
         this.showNotif('Ошибка загрузки изображения', 'red')
       }
+    },
+    showUploadFileDialog () {
+      if (!this.singleStudio.id) {
+        this.showNotif('Сначала создайте и сохраните локацию', 'orange')
+        return
+      }
+      this.isModalForUploadFile = true
     },
     showNotif (msg, clr = 'purple') {
       this.$q.notify({
