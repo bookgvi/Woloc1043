@@ -39,7 +39,7 @@
             span.text-primary &nbsp; Скрыть изображения
     q-dialog(v-model="isModalForUploadFile")
       q-card
-        uploadForm(@closeUploadDialog="closeUploadDialog" :singleStudio="singleStudio")
+        uploadForm(@closeUploadDialog="closeUploadDialog" @closeUploadDialogWithoutReload="closeUploadDialogWithoutReload" :singleStudio="singleStudio")
 </template>
 
 <script>
@@ -98,6 +98,9 @@ export default {
     closeUploadDialog () {
       this.isModalForUploadFile = false
       this.$emit('reloadPage')
+    },
+    closeUploadDialogWithoutReload () {
+      this.isModalForUploadFile = false
     },
     async deleteImg (img, index) {
       img.isDeleted = true
