@@ -26,7 +26,7 @@
               :src="srcVM(item.src)"
               style="height: 140px; width: 140px"
             )
-              q-btn.absolute-top-right(icon="close" class="block" dense flat color="red" title="close" @click="deleteImg(singleStudioVM.images[index - 1], index- 1)")
+              q-btn.absolute-top-right(icon="close" class="block" dense flat color="red" title="close" @click="deleteImg(item, index)")
               template(v-slot:error)
                 .absolute-full.flex.flex-center.bg-grey-6.text-white Не удалось загрузить изображение
       .row
